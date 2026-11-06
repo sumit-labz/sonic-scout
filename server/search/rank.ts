@@ -9,7 +9,7 @@ export function stem(word: string): string {
     .replace(/(.)\1$/, "$1");
 }
 
-function words(text: string): string[] {
+export function words(text: string): string[] {
   return text.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((word) => word.length > 1);
 }
 

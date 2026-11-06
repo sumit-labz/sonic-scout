@@ -18,6 +18,7 @@ Sonic Scout searches open sound libraries for film sound designers. It shows you
 | --- | --- |
 | 🗣️ **Plain-language search** | "A metallic ticking sound that feels unsettling." It works out the source, mood, texture and length, then runs several searches at once. |
 | ⚖️ **A licence gate** | Every result is checked against its real licence. Anything not cleared for commercial use never reaches you, and you can see how many were blocked and why. |
+| 📂 **Your own packs too** | Point it at sound packs you've already downloaded, and they appear in the same results as the online libraries. |
 | 🔗 **The original page, one click away** | Every card links to the page where the sound was posted, so you can check the creator and the licence yourself. |
 | 🌊 **Real waveforms** | Drawn from the actual audio, never faked. |
 | 📁 **Project folders** | Sort sounds into film projects and collections, then save them all at once. |
@@ -84,6 +85,7 @@ Every recording passes one gate, in [`server/licence/classify.ts`](server/licenc
 | 🟢 CC0, public domain | Yes | None |
 | 🟡 CC BY | Yes | Credit the creator. `CREDITS.txt` has the lines ready. |
 | 🟠 CC BY-SA | No, unless `ALLOW_SHARE_ALIKE=true` | Commercial use is allowed, but syncing audio to picture can count as an adaptation, so ShareAlike may reach your film. |
+| 📂 A licence you declared for your own folder | Yes, labelled as your declaration | Whatever that licence says. See [Your own sound folders](#-your-own-sound-folders). |
 | 🔴 CC BY-NC, BY-NC-SA, BY-NC-ND | Never | |
 | 🔴 CC BY-ND | Never | Forbids adaptations, which covers sound design. |
 | 🔴 Sampling+, personal use, unknown, conflicting data | Never | |
@@ -118,6 +120,7 @@ The rules it follows:
 | Freesound via Openverse | None | MP3 preview only | Used when there is no Freesound key. 20 requests a minute, 200 a day, and each search uses up to four. |
 | Wikimedia Commons | None | Yes | Most of its audio is CC BY-SA, so much of it is blocked. |
 | Internet Archive | None | Yes, often WAV | **Off by default.** Tick "Include unreviewed" to search it. |
+| Your folders | None | Yes, your own files | Off until you add a folder in Setup. Filenames never leave your computer. |
 
 **Why Internet Archive is opt-in.** Uploaders pick their own licence and nobody checks it. Testing turned up ripped video-game audio marked "public domain". Its results carry an orange badge, and the inventory records them as `unreviewed uploader claim`.
 
@@ -128,6 +131,34 @@ The rules it follows:
 - **SFXMint, Lotsofsounds:** only their own marketing claims back the licensing.
 
 **Freesound API terms.** The API terms are separate from each sound's licence and say commercial use of the API is negotiated case by case. Using a sound commercially under its licence is one thing. Selling Sonic Scout itself as a product would need an agreement with Freesound.
+
+## 📂 Your own sound folders
+
+Some of the best free collections have no API, such as the [Sonniss GDC bundles](https://sonniss.com/gameaudiogdc). Download a pack yourself, then add its folder under **Setup → Your sound folders**. Its sounds appear in your normal search results.
+
+**You declare the licence, because audio files don't carry one.** Choose one for each folder:
+
+| Choice | Result |
+| --- | --- |
+| Sonniss GDC bundle | Shown, no credit needed. |
+| My own recordings | Shown, no credit needed. |
+| CC0 | Shown, no credit needed. |
+| CC BY | Shown, credit required. Asks for the creator and a web link, so the credit line is complete. |
+| Another licence | Shown. Asks for its name and a link to its text, and for you to confirm it allows commercial use in a film. |
+| Not sure yet | **Blocked**, and counted with the other blocked sounds, until you add the folder again with a licence. |
+
+> ⚠️ **Sonic Scout can't check what you declare.** These results carry a dashed badge reading "Your declaration", and the inventory records `declared by you for this folder`. A folder of sounds from different sources needs the licence that fits all of them, so split it up or leave it as "Not sure yet".
+
+**Sonniss terms, from licence v2.0 (27 August 2026).** Commercial use and syncing to film are allowed, without credit. You can't redistribute the sounds themselves, even modified ones, or use them to train or build AI. These terms cover the GDC bundles only, so check any other pack's licence. If a bundle comes with a newer licence, read that one.
+
+**How it works:**
+
+- 🗂️ Your files stay where they are. Saving a sound copies it to your project folder, byte for byte, and removing a folder from Sonic Scout never deletes anything.
+- 🔒 Filenames stay on your computer. They aren't sent to any library or to Claude, which only sees what you type.
+- 🔎 Search matches filenames and folder names, so well-named packs work best.
+- 🔄 Press **Rescan** after adding or changing files. Each file can belong to only one folder, so overlapping folders are refused.
+- ⛓️ Links and shortcuts are skipped, and up to 200,000 sounds are indexed per folder.
+- 🎧 WAV, FLAC, MP3, OGG and M4A play in the app. AIFF files can be found and saved but won't play in Chrome or Edge, so audition those in Ableton.
 
 ## ⚡ Caching
 
@@ -142,6 +173,7 @@ These libraries are free services, so Sonic Scout tries not to ask them twice.
 - If a library rate-limits you, cached answers keep working, and Sonic Scout backs off for as long as the library asks.
 - Failures are never cached.
 - Waveforms for Wikimedia Commons and Internet Archive are drawn when you first play the sound. Both serve whole original files and run on donations.
+- Your own folders aren't cached. They're searched directly from an index in `data/local-index.json`, so a rescan shows up at once.
 - To clear everything on disk, delete `data/cache`.
 
 The first search for something new still has to wait for the libraries, which took 4 to 7 seconds in testing.
@@ -150,6 +182,7 @@ The first search for something new still has to wait for the libraries, which to
 
 - **Keys:** `Space` play or pause, `J` next, `K` previous, `F` favourite, `L` loop.
 - **Source link:** click `freesound.org ↗` on any card to open the page where the sound was posted.
+- **Your folders:** cards from your own folders have no source link, because they have no page on the web. If you gave a CC BY folder a link, it appears in the credit line.
 - **Waveforms** are decoded from the real audio. A flat line means the file hasn't been played yet, couldn't be measured, or is over 20 MB.
 - **"% match"** scores the recording's title, tags and description against your request. It cannot hear the audio, so trust your ears.
 - **"Lossless"** describes the file format, not the recording. Some old Commons WAVs are as low as 8 kHz, so check the sound before relying on it.

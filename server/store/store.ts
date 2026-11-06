@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { mkdir, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { Collection, DownloadRecord, Library, Project, Sound } from "../../shared/types";
+import type { Collection, DownloadRecord, Library, Project, Sound, SoundFolder } from "../../shared/types";
 
 export class StoreError extends Error {}
 
@@ -16,7 +16,7 @@ export class Store {
     defaultDownloadRoot: string,
   ) {
     this.file = join(dataDir, "library.json");
-    const fresh: Library = { downloadRoot: defaultDownloadRoot, favourites: [], projects: [], downloads: [] };
+    const fresh: Library = { downloadRoot: defaultDownloadRoot, favourites: [], projects: [], downloads: [], soundFolders: [] };
     this.library = existsSync(this.file)
       ? { ...fresh, ...(JSON.parse(readFileSync(this.file, "utf8")) as Partial<Library>) }
       : fresh;
@@ -106,6 +106,23 @@ export class Store {
   async removeFromCollection(projectId: string, collectionId: string, soundId: string) {
     const collection = this.collection(projectId, collectionId);
     collection.items = collection.items.filter((item) => item.sound.id !== soundId);
+    await this.save();
+  }
+
+  async addSoundFolder(folder: SoundFolder) {
+    this.library.soundFolders.push(folder);
+    await this.save();
+  }
+
+  async updateSoundFolder(folderId: string, changes: Partial<SoundFolder>) {
+    const folder = this.library.soundFolders.find((item) => item.id === folderId);
+    if (!folder) throw new StoreError("Folder not found.");
+    Object.assign(folder, changes);
+    await this.save();
+  }
+
+  async removeSoundFolder(folderId: string) {
+    this.library.soundFolders = this.library.soundFolders.filter((folder) => folder.id !== folderId);
     await this.save();
   }
 

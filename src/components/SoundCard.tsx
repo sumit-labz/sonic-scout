@@ -30,8 +30,10 @@ function fileLine(sound: Sound): string {
 }
 
 function LicenceBadge({ sound, open, onClick }: { sound: Sound; open: boolean; onClick: () => void }) {
-  const tone = sound.licenceReview === "unreviewed" ? "warn" : sound.licence.attributionRequired ? "credit" : "free";
-  const text = sound.licence.attributionRequired ? "Commercial OK · credit required" : "Commercial OK · no credit";
+  const declared = sound.licenceReview === "declared";
+  const tone = sound.licenceReview === "unreviewed" ? "warn" : declared ? "declared" : sound.licence.attributionRequired ? "credit" : "free";
+  const credit = sound.licence.attributionRequired ? "credit required" : "no credit";
+  const text = `${declared ? "Your declaration" : "Commercial OK"} · ${credit}`;
   return (
     <button className={`licence ${tone}`} aria-expanded={open} onClick={onClick}>
       <strong>{sound.licence.label}</strong> {text}
@@ -50,6 +52,11 @@ function LicenceDetails({ sound }: { sound: Sound }) {
           The uploader set this licence and nobody has reviewed it. Check that they own the recording before you clear it.
         </p>
       )}
+      {sound.licenceReview === "declared" && (
+        <p className="caution">
+          This is the licence you declared for this folder. Local files carry no licence data, so Sonic Scout hasn't checked it.
+        </p>
+      )}
       <dl>
         <dt>Licence</dt>
         <dd>
@@ -61,11 +68,14 @@ function LicenceDetails({ sound }: { sound: Sound }) {
         </dd>
         <dt>Creator</dt>
         <dd>{webHost(sound.creatorUrl) ? <a href={sound.creatorUrl!} target="_blank" rel="noreferrer">{sound.creator}</a> : sound.creator}</dd>
-        <dt>Source says</dt>
+        <dt>{sound.licenceReview === "declared" ? "Declaration" : "Source says"}</dt>
         <dd><code>{licence.evidence.rawValue}</code> in {licence.evidence.field}</dd>
-        <dt>Checked</dt>
-        <dd>{new Date(licence.evidence.checkedAt).toLocaleString()}. Checked again when you download.</dd>
-        <dt>Source page</dt>
+        <dt>{sound.licenceReview === "declared" ? "Declared" : "Checked"}</dt>
+        <dd>
+          {new Date(licence.evidence.checkedAt).toLocaleString()}.
+          {sound.licenceReview === "declared" ? " Your current declaration is read again when you save." : " Checked again when you download."}
+        </dd>
+        <dt>{sourceHost ? "Source page" : "Source"}</dt>
         <dd>{sourceHost ? <a href={sound.sourcePageUrl} target="_blank" rel="noreferrer">{sound.sourcePageUrl}</a> : sound.sourcePageUrl}</dd>
       </dl>
       {sound.attribution && (

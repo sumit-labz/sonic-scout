@@ -11,6 +11,7 @@ import { ProviderError, retryAfter } from "./http";
 import type { ClaudeInterpreter } from "./interpret/claude";
 import { interpretWithRules } from "./interpret/rules";
 import type { LicencePolicy } from "./licence/classify";
+import type { LocalLibrary } from "./providers/local";
 import type { FreesoundAuth } from "./providers/freesound";
 import { isAllowedAudioHost } from "./providers/registry";
 import type { SoundProvider } from "./providers/types";
@@ -19,6 +20,7 @@ import { Store, StoreError } from "./store/store";
 
 export interface AppDeps {
   audioCache?: AudioCache;
+  local?: LocalLibrary;
   config: Config;
   store: Store;
   engine: SearchEngine;
@@ -51,6 +53,17 @@ const DownloadBody = z.object({
   allowPreview: z.boolean().optional(),
 });
 
+const FolderBody = z.object({
+  path: z.string().trim().min(1).max(1000),
+  name: z.string().trim().max(120).optional(),
+  licence: z.enum(["sonniss-gdc", "own", "cc0", "cc-by", "custom", "unsure"]),
+  creator: z.string().trim().max(200).optional(),
+  sourceUrl: z.string().trim().max(1000).optional(),
+  customLabel: z.string().trim().max(120).optional(),
+  customUrl: z.string().trim().max(1000).optional(),
+  confirmed: z.boolean().default(false),
+});
+
 const AUDIO_CACHE_CONTROL = "private, max-age=604800";
 const CACHEABLE_DOWNLOAD_MS = 5 * 60 * 1000;
 const AUDIO_TYPE = /^(audio\/|application\/ogg)/i;
@@ -78,7 +91,7 @@ function pickFolder(): Promise<string | null> {
   if (process.platform !== "win32") return Promise.resolve(null);
   const script = `Add-Type -AssemblyName System.Windows.Forms
 $f = New-Object System.Windows.Forms.FolderBrowserDialog
-$f.Description = 'Choose where Sonic Scout saves sounds'
+$f.Description = 'Choose a folder'
 $w = New-Object System.Windows.Forms.Form
 $w.TopMost = $true
 if ($f.ShowDialog($w) -eq 'OK') { [Console]::OutputEncoding = [Text.Encoding]::UTF8; Write-Output $f.SelectedPath }`;
@@ -90,7 +103,7 @@ if ($f.ShowDialog($w) -eq 'OK') { [Console]::OutputEncoding = [Text.Encoding]::U
 }
 
 export function createApp(deps: AppDeps): Hono {
-  const { config, store, engine, providers, freesound, policy, audioCache } = deps;
+  const { config, store, engine, providers, freesound, policy, audioCache, local } = deps;
   const app = new Hono();
 
   // This server can write files and open dialogs, so only this machine's own
@@ -203,8 +216,8 @@ export function createApp(deps: AppDeps): Hono {
     return c.json({ error: "Too many redirects.", code: "upstream" }, 502);
   }
 
-  function serveCachedAudio(audio: CachedAudio, rangeHeader: string | undefined): Response {
-    const headers = new Headers({ "Cache-Control": AUDIO_CACHE_CONTROL, "Content-Type": audio.contentType, "Accept-Ranges": "bytes" });
+  function serveCachedAudio(audio: CachedAudio, rangeHeader: string | undefined, cacheControl = AUDIO_CACHE_CONTROL): Response {
+    const headers = new Headers({ "Cache-Control": cacheControl, "Content-Type": audio.contentType, "Accept-Ranges": "bytes" });
     const range = rangeHeader ? parseRange(rangeHeader, audio.size) : null;
     if (rangeHeader && !range) {
       headers.set("Content-Range", `bytes */${audio.size}`);
@@ -217,6 +230,32 @@ export function createApp(deps: AppDeps): Hono {
     headers.set("Content-Length", String(range.end - range.start + 1));
     headers.set("Content-Range", `bytes ${range.start}-${range.end}/${audio.size}`);
     return new Response(fileStream(audio.path, range), { status: 206, headers });
+  }
+
+  if (local) {
+    app.get("/api/local/audio/:folder/:file", async (c) => {
+      // These are the user's own files, so another site must not be able to embed them.
+      const site = c.req.header("sec-fetch-site");
+      if (site && site !== "same-origin" && site !== "none") return c.json({ error: "Forbidden", code: "forbidden" }, 403);
+      const file = await local.locate(c.req.param("folder"), c.req.param("file"));
+      if (!file) return c.json({ error: "That file is no longer available.", code: "not_found" }, 404);
+      return serveCachedAudio(file, c.req.header("range"), "no-store");
+    });
+
+    app.post("/api/local/folders", async (c) => {
+      await local.addFolder(FolderBody.parse(await c.req.json()));
+      return c.json(store.snapshot());
+    });
+
+    app.post("/api/local/folders/:folder/rescan", async (c) => {
+      await local.rescan(c.req.param("folder"));
+      return c.json(store.snapshot());
+    });
+
+    app.delete("/api/local/folders/:folder", async (c) => {
+      await local.removeFolder(c.req.param("folder"));
+      return c.json(store.snapshot());
+    });
   }
 
   app.get("/api/library", (c) => c.json(store.snapshot()));

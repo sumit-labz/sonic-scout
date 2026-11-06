@@ -2,6 +2,7 @@ import type {
   ApiError,
   AppStatus,
   DownloadResult,
+  FolderLicenceKind,
   Library,
   SearchFilters,
   SearchResponse,
@@ -35,7 +36,19 @@ async function request<T>(path: string, method = "GET", body?: unknown): Promise
   return (await response.json()) as T;
 }
 
-export const audioUrl = (url: string) => `/api/audio?u=${encodeURIComponent(url)}`;
+// Local files are already served by this app. Everything else goes through the proxy.
+export const audioUrl = (url: string) => (url.startsWith("/api/") ? url : `/api/audio?u=${encodeURIComponent(url)}`);
+
+export interface NewFolder {
+  path: string;
+  name: string;
+  licence: FolderLicenceKind;
+  creator: string;
+  sourceUrl: string;
+  customLabel: string;
+  customUrl: string;
+  confirmed: boolean;
+}
 
 export const api = {
   status: () => request<AppStatus>("/api/status"),
@@ -56,6 +69,9 @@ export const api = {
     request<Library>(`/api/projects/${projectId}/collections/${collectionId}/items`, "DELETE", { soundId }),
   setDownloadRoot: (path: string) => request<Library>("/api/library/download-root", "PUT", { path }),
   pickFolder: () => request<{ path: string | null }>("/api/pick-folder", "POST"),
+  addFolder: (folder: NewFolder) => request<Library>("/api/local/folders", "POST", folder),
+  rescanFolder: (id: string) => request<Library>(`/api/local/folders/${id}/rescan`, "POST"),
+  removeFolder: (id: string) => request<Library>(`/api/local/folders/${id}`, "DELETE"),
   download: (sound: Sound, target: { projectId?: string; collectionId?: string }, allowPreview = false) =>
     request<DownloadResult>("/api/download", "POST", {
       provider: sound.provider,

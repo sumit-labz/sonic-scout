@@ -9,6 +9,7 @@ export type LicenceCode =
   | "cc-by-nc-nd"
   | "sampling-plus"
   | "commercial"
+  | "declared"
   | "personal"
   | "unknown";
 
@@ -37,7 +38,7 @@ export interface LicenceInfo {
   evidence: LicenceEvidence;
 }
 
-export type ProviderId = "freesound" | "openverse" | "wikimedia" | "archive";
+export type ProviderId = "freesound" | "openverse" | "wikimedia" | "archive" | "local";
 
 export interface OriginalFile {
   /** The file as the creator uploaded it, not a lossy preview. */
@@ -68,8 +69,8 @@ export interface Sound {
   previewFormat: string | null;
   original: OriginalFile;
   licence: LicenceInfo;
-  /** Whether anyone but the uploader has looked at the licence claim. */
-  licenceReview: "community" | "unreviewed";
+  /** Who stands behind the licence: a reviewed library, only the uploader, or the user for their own folder. */
+  licenceReview: "community" | "unreviewed" | "declared";
   /** Ready-to-paste credit line. Null when the licence requires none. */
   attribution: string | null;
 }
@@ -171,11 +172,32 @@ export interface DownloadRecord {
   downloadedAt: string;
 }
 
+export type FolderLicenceKind = "sonniss-gdc" | "own" | "cc0" | "cc-by" | "custom" | "unsure";
+
+/** A folder of the user's own sound files. Its files carry no licence, so the user declares one for the folder. */
+export interface SoundFolder {
+  id: string;
+  name: string;
+  path: string;
+  licence: FolderLicenceKind;
+  creator: string | null;
+  sourceUrl: string | null;
+  customLabel: string | null;
+  customUrl: string | null;
+  /** When the user confirmed the declaration. Null means nothing was declared, so nothing is cleared. */
+  confirmedAt: string | null;
+  fileCount: number;
+  scannedAt: string;
+  /** The folder holds more files than Sonic Scout will index. */
+  truncated: boolean;
+}
+
 export interface Library {
   downloadRoot: string;
   favourites: Sound[];
   projects: Project[];
   downloads: DownloadRecord[];
+  soundFolders: SoundFolder[];
 }
 
 export interface ProviderStatus {

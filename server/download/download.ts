@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { createWriteStream } from "node:fs";
+import { createReadStream, createWriteStream } from "node:fs";
 import { access, mkdir, rename, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { Readable, Transform } from "node:stream";
@@ -7,7 +7,7 @@ import { pipeline } from "node:stream/promises";
 import type { ReadableStream as WebStream } from "node:stream/web";
 import type { DownloadRecord, Sound } from "../../shared/types";
 import { refusalReason, type LicencePolicy } from "../licence/classify";
-import type { SoundProvider } from "../providers/types";
+import type { DownloadTarget, SoundProvider } from "../providers/types";
 import type { Store } from "../store/store";
 import { inventoryRow, writeInventory } from "./inventory";
 
@@ -42,6 +42,17 @@ async function freePath(directory: string, name: string): Promise<string> {
   let candidate = join(directory, name);
   for (let copy = 2; await exists(candidate); copy++) candidate = join(directory, `${stem} (${copy})${extension}`);
   return candidate;
+}
+
+async function openRemote(target: DownloadTarget): Promise<Readable> {
+  const response = await fetch(target.url, { headers: target.headers, signal: AbortSignal.timeout(10 * 60_000) });
+  if (response.status === 401 || response.status === 403) {
+    throw new DownloadError("source_refused", "The source refused the download. Try reconnecting Freesound.", 502);
+  }
+  if (!response.ok || !response.body) {
+    throw new DownloadError("source_failed", `The source returned ${response.status}.`, 502);
+  }
+  return Readable.fromWeb(response.body as WebStream);
 }
 
 export interface DownloadRequest {
@@ -90,13 +101,7 @@ export async function downloadSound(args: {
   if (previous && (await exists(previous.path))) return { record: previous, alreadyHad: true, sound };
 
   await mkdir(directory, { recursive: true });
-  const response = await fetch(target.url, { headers: target.headers, signal: AbortSignal.timeout(10 * 60_000) });
-  if (response.status === 401 || response.status === 403) {
-    throw new DownloadError("source_refused", "The source refused the download. Try reconnecting Freesound.", 502);
-  }
-  if (!response.ok || !response.body) {
-    throw new DownloadError("source_failed", `The source returned ${response.status}.`, 502);
-  }
+  const source = target.file ? createReadStream(target.file) : await openRemote(target);
 
   const finalPath = await freePath(directory, safeName(target.filename));
   const temporary = `${finalPath}.part`;
@@ -111,7 +116,7 @@ export async function downloadSound(args: {
   });
 
   try {
-    await pipeline(Readable.fromWeb(response.body as WebStream), meter, createWriteStream(temporary));
+    await pipeline(source, meter, createWriteStream(temporary));
     await rename(temporary, finalPath);
   } catch (error) {
     await rm(temporary, { force: true });

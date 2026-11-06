@@ -119,6 +119,7 @@ input[type="checkbox"] { accent-color: var(--accent); margin: 0; }
 .details dt { color: var(--faint); }
 .details dd { margin: 0; overflow-wrap: anywhere; color: var(--muted); }
 .details code { color: var(--text); font-size: 12px; }
+.licence.declared { color: var(--credit); border-color: #66562a; border-style: dashed; }
 .caution { color: var(--warn); margin-bottom: 8px; }
 .credit-line { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
 .credit-line span { color: var(--faint); }
@@ -168,6 +169,15 @@ input:not([type]):focus { border-color: #4a4a52; }
 
 .settings { margin-bottom: 26px; }
 .settings h2 { font-size: 14px; font-weight: 550; margin-bottom: 4px; }
+.folders { margin: 10px 0 4px; }
+.folder-actions { text-align: right; white-space: nowrap; }
+.folder-actions > * + * { margin-left: 12px; }
+.folder-form { display: grid; gap: 2px; justify-items: start; margin-top: 8px; }
+.folder-form .inline { width: 100%; }
+.folder-form select { flex: 1; min-width: 0; padding: 7px 10px; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+.confirm-licence { display: flex; gap: 8px; align-items: flex-start; margin: 10px 0; color: var(--muted); }
+.confirm-licence input { margin-top: 3px; flex: none; }
+.folder-form > .primary { margin-top: 10px; }
 table { width: 100%; border-collapse: collapse; color: var(--muted); }
 td { padding: 6px 12px 6px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
 td:first-child { color: var(--text); white-space: nowrap; }

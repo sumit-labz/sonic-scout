@@ -7,20 +7,25 @@ import { AudioCache } from "./cache/audioCache";
 import { SearchCache } from "./cache/searchCache";
 import { loadConfig } from "./config";
 import { claudeInterpreter } from "./interpret/claude";
+import { LocalLibrary } from "./providers/local";
 import { buildProviders } from "./providers/registry";
 import { createEngine } from "./search/engine";
 import { Store } from "./store/store";
 
 const config = loadConfig();
 const policy = { allowShareAlike: config.allowShareAlike };
-const { providers, freesound } = buildProviders(config);
+const store = new Store(config.dataDir, config.defaultDownloadRoot);
+const local = new LocalLibrary(store, config.dataDir);
+const { providers: libraries, freesound } = buildProviders(config);
+const providers = [...libraries, local.provider];
 
 const app = createApp({
   config,
   policy,
   providers,
   freesound,
-  store: new Store(config.dataDir, config.defaultDownloadRoot),
+  store,
+  local,
   engine: createEngine(providers, policy, new SearchCache(join(config.dataDir, "cache", "search.json"))),
   audioCache: new AudioCache(join(config.dataDir, "cache", "audio")),
   claude: config.anthropicKey ? claudeInterpreter(config.anthropicKey, config.model) : null,

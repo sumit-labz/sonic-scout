@@ -79,6 +79,7 @@ export function createEngine(providers: SoundProvider[], policy: LicencePolicy, 
   }
 
   async function queryProvider(provider: SoundProvider, query: string): Promise<Sound[]> {
+    if (provider.live) return provider.search({ query, limit: RESULTS_PER_QUERY });
     const key = `${provider.id}:${query.toLowerCase().trim().replace(/\s+/g, " ")}`;
     const cached = cache.read(key);
     if (cached?.fresh) return cached.sounds;

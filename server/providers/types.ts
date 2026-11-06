@@ -11,6 +11,8 @@ export interface DownloadTarget {
   filename: string;
   format: string;
   kind: "original" | "preview";
+  /** A file on this machine, read directly instead of fetching `url`. */
+  file?: string;
 }
 
 /**
@@ -26,6 +28,8 @@ export interface SoundProvider {
    * libraries stay out of results unless the user opts in.
    */
   reviewed: boolean;
+  /** Answers from this machine, so its results are never cached and can't go stale after a rescan. */
+  live?: boolean;
   /** Human summary of whether full-quality originals can be fetched. */
   originals(): string;
   disabledReason(): string | null;

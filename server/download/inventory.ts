@@ -9,6 +9,12 @@ const COLUMNS = [
   "licence_review", "licence_evidence", "licence_field", "licence_checked_at",
 ] as const;
 
+const REVIEW_LABELS: Record<Sound["licenceReview"], string> = {
+  community: "community reviewed library",
+  unreviewed: "unreviewed uploader claim",
+  declared: "declared by you for this folder",
+};
+
 export function csvCell(value: string | number | boolean | null | undefined): string {
   let text = value === null || value === undefined ? "" : String(value);
   // Stops a hostile title from running as a spreadsheet formula.
@@ -44,7 +50,7 @@ export function inventoryRow(args: {
     commercial_use: sound.licence.commercialUse,
     attribution_required: sound.licence.attributionRequired,
     attribution_text: sound.attribution,
-    licence_review: sound.licenceReview === "community" ? "community reviewed library" : "unreviewed uploader claim",
+    licence_review: REVIEW_LABELS[sound.licenceReview],
     licence_evidence: sound.licence.evidence.rawValue,
     licence_field: sound.licence.evidence.field,
     licence_checked_at: sound.licence.evidence.checkedAt,

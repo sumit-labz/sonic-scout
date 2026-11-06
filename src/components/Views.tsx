@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { CATEGORIES } from "../../shared/categories";
-import type { AppStatus, Collection, Project } from "../../shared/types";
+import type { AppStatus, Collection, FolderLicenceKind, Project, SoundFolder } from "../../shared/types";
 import { api } from "../api";
 import { useApp } from "../state";
 import { SoundCard } from "./SoundCard";
@@ -156,6 +156,182 @@ export function ProjectsView() {
   );
 }
 
+const FOLDER_LICENCES: Array<[FolderLicenceKind, string]> = [
+  ["sonniss-gdc", "Sonniss GDC bundle"],
+  ["own", "My own recordings"],
+  ["cc0", "CC0"],
+  ["cc-by", "CC BY (credit required)"],
+  ["custom", "Another licence"],
+  ["unsure", "Not sure yet (stays blocked)"],
+];
+
+const FOLDER_CONFIRMATIONS: Record<Exclude<FolderLicenceKind, "unsure" | "sonniss-gdc">, string> = {
+  own: "I recorded these sounds myself and hold the rights.",
+  cc0: "I've checked that these sounds were released under CC0.",
+  "cc-by": "I've checked that these sounds were released under CC BY.",
+  custom: "I've read this licence, and it allows commercial use in a film.",
+};
+
+function folderLicenceName(folder: SoundFolder): string {
+  if (folder.licence === "custom") return folder.customLabel ?? "Another licence";
+  return FOLDER_LICENCES.find(([kind]) => kind === folder.licence)?.[1] ?? folder.licence;
+}
+
+function SoundFolders() {
+  const { library, setLibrary, notify } = useApp();
+  const blank = { path: "", name: "", creator: "", sourceUrl: "", customLabel: "", customUrl: "" };
+  const [form, setForm] = useState(blank);
+  const [licence, setLicence] = useState<FolderLicenceKind | "">("");
+  const [confirmed, setConfirmed] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<string | null>(null);
+  const field = (key: keyof typeof blank, label: string, placeholder = label) => (
+    <input
+      aria-label={label}
+      placeholder={placeholder}
+      value={form[key]}
+      onChange={(event) => setForm({ ...form, [key]: event.target.value })}
+    />
+  );
+
+  async function choose() {
+    const picked = await api.pickFolder();
+    if (picked.path) setForm({ ...form, path: picked.path });
+  }
+
+  async function add(event: FormEvent) {
+    event.preventDefault();
+    if (!licence) return;
+    setBusy("add");
+    try {
+      const next = await api.addFolder({ ...form, licence, confirmed });
+      setLibrary(next);
+      const added = next.soundFolders[next.soundFolders.length - 1];
+      notify(added ? `Found ${added.fileCount.toLocaleString()} sounds in ${added.name}` : "Folder added");
+      setForm(blank);
+      setLicence("");
+      setConfirmed(false);
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Could not add that folder.", true);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function rescan(id: string) {
+    setBusy(id);
+    try {
+      setLibrary(await api.rescanFolder(id));
+      notify("Folder rescanned");
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Could not rescan that folder.", true);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <section className="settings">
+      <h2>Your sound folders</h2>
+      <p className="hint">
+        Search packs you've already downloaded alongside the online libraries. Files stay where they are, and filenames never leave this computer.
+        Audio files carry no licence, so you declare one for each folder. Sonic Scout can't check what you declare.
+      </p>
+      {library.soundFolders.length > 0 && (
+        <table className="folders">
+          <tbody>
+            {library.soundFolders.map((folder) => (
+              <tr key={folder.id}>
+                <td title={folder.path}>{folder.name}</td>
+                <td>{folderLicenceName(folder)}</td>
+                <td>
+                  {folder.fileCount.toLocaleString()} {folder.fileCount === 1 ? "sound" : "sounds"}
+                  {folder.truncated ? " (limit reached, so some were skipped)" : ""}
+                </td>
+                <td className="folder-actions">
+                  {removing === folder.id ? (
+                    <>
+                      <span className="hint">Your files won't be deleted.</span>
+                      <button
+                        className="text danger"
+                        onClick={async () => {
+                          setLibrary(await api.removeFolder(folder.id));
+                          setRemoving(null);
+                        }}
+                      >
+                        Remove
+                      </button>
+                      <button className="text" onClick={() => setRemoving(null)}>Keep</button>
+                    </>
+                  ) : (
+                    <>
+                      <button className="text" disabled={busy !== null} onClick={() => void rescan(folder.id)}>
+                        {busy === folder.id ? "Rescanning…" : "Rescan"}
+                      </button>
+                      <button className="text quiet" onClick={() => setRemoving(folder.id)}>Remove</button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      <form className="folder-form" onSubmit={(event) => void add(event)}>
+        <div className="inline">
+          {field("path", "Folder path", "Folder path, like D:\\Sounds\\Sonniss GDC 2026")}
+          <button type="button" className="text" onClick={() => void choose()}>Choose…</button>
+        </div>
+        <div className="inline">
+          {field("name", "Folder name", "Name (optional)")}
+          <select
+            aria-label="Licence for this folder"
+            value={licence}
+            onChange={(event) => {
+              setLicence(event.target.value as FolderLicenceKind | "");
+              setConfirmed(false);
+            }}
+          >
+            <option value="">What licence covers these sounds?</option>
+            {FOLDER_LICENCES.map(([kind, label]) => <option key={kind} value={kind}>{label}</option>)}
+          </select>
+        </div>
+        {licence === "cc-by" && (
+          <div className="inline">
+            {field("creator", "Creator name")}
+            {field("sourceUrl", "Web link for the credit", "Web link for the credit")}
+          </div>
+        )}
+        {licence === "custom" && (
+          <div className="inline">
+            {field("customLabel", "Licence name")}
+            {field("customUrl", "Web link to the licence text", "Web link to the licence text")}
+          </div>
+        )}
+        {licence === "unsure" && (
+          <p className="hint">These sounds stay out of your results until you add the folder again with a licence. They're counted as blocked.</p>
+        )}
+        {licence && licence !== "unsure" && (
+          <label className="confirm-licence">
+            <input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />
+            <span>
+              {licence === "sonniss-gdc" ? (
+                <>
+                  These came from a Sonniss GDC bundle, and I've read <a href="https://sonniss.com/gdc-bundle-license" target="_blank" rel="noreferrer">its licence</a>.
+                  It allows commercial use including film, but not sharing the sounds themselves or training AI on them.
+                </>
+              ) : FOLDER_CONFIRMATIONS[licence]}
+            </span>
+          </label>
+        )}
+        <button className="primary" disabled={busy !== null || !form.path.trim() || !licence || (licence !== "unsure" && !confirmed)}>
+          {busy === "add" ? "Scanning…" : "Add folder"}
+        </button>
+      </form>
+    </section>
+  );
+}
+
 export function SettingsView({ status }: { status: AppStatus | null }) {
   const { library, setLibrary, notify } = useApp();
   const [path, setPath] = useState(library.downloadRoot);
@@ -185,11 +361,12 @@ export function SettingsView({ status }: { status: AppStatus | null }) {
           <button className="text">Save</button>
         </form>
       </section>
+      <SoundFolders />
       <section className="settings">
         <h2>Sound libraries</h2>
         <table>
           <tbody>
-            {status?.providers.map((provider) => (
+            {status?.providers.filter((provider) => provider.id !== "local").map((provider) => (
               <tr key={provider.id}>
                 <td>{provider.label}</td>
                 <td>{provider.enabled ? (provider.reviewed ? "On" : "Opt-in per search") : provider.reason}</td>
@@ -210,6 +387,7 @@ export function SettingsView({ status }: { status: AppStatus | null }) {
           Only CC0, public domain and CC BY recordings are shown. CC BY needs the credit line in your film's credits.
           Non-commercial, no-derivatives and unknown licences are always blocked.
           CC BY-SA is {status?.shareAlikeAllowed ? "allowed by your setting" : "blocked, because ShareAlike can extend to a film the sound is synced into"}.
+          Sounds in your own folders use the licence you declare for that folder, and it's labelled as your declaration wherever it appears.
         </p>
       </section>
       <section className="settings">

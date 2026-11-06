@@ -1,0 +1,39 @@
+{
+  "name": "sonic-scout",
+  "version": "0.1.0",
+  "description": "Describe a sound, audition it, confirm you can use it commercially, and file it for Ableton Live.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sumgup/sonic-scout.git"
+  },
+  "homepage": "https://github.com/sumgup/sonic-scout#readme",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c cyan,magenta \"node --env-file-if-exists=.env --watch --import tsx server/index.ts\" \"vite\"",
+    "build": "vite build",
+    "start": "node --env-file-if-exists=.env --import tsx server/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.6.0",
+    "@hono/node-server": "^2.1.6",
+    "hono": "^4.13.16",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.2.1",
+    "concurrently": "^10.0.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0"
+  }
+}

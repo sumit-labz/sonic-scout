@@ -5,9 +5,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sumgup/sonic-scout.git"
+    "url": "git+https://github.com/sumit-labz/sonic-scout.git"
   },
-  "homepage": "https://github.com/sumgup/sonic-scout#readme",
+  "homepage": "https://github.com/sumit-labz/sonic-scout#readme",
   "private": true,
   "type": "module",
   "scripts": {

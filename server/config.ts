@@ -29,6 +29,6 @@ export function loadConfig(): Config {
     freesoundKey: value("FREESOUND_API_KEY"),
     freesoundClientId: value("FREESOUND_CLIENT_ID"),
     allowShareAlike: value("ALLOW_SHARE_ALIKE") === "true",
-    userAgent: `SonicScout/0.1 (${contact ?? "https://github.com/sumgup/sonic-scout"})`,
+    userAgent: `SonicScout/0.1 (${contact ?? "https://github.com/sumit-labz/sonic-scout"})`,
   };
 }

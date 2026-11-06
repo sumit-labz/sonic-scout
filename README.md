@@ -30,7 +30,7 @@ Sonic Scout searches open sound libraries for film sound designers. It shows you
 You need [Node 22](https://nodejs.org).
 
 ```bash
-git clone https://github.com/sumgup/sonic-scout.git
+git clone https://github.com/sumit-labz/sonic-scout.git
 ```
 
 ```bash

@@ -1,3 +1,4 @@
+import type { GenerateRequest } from "../shared/generate";
 import type {
   ApiError,
   AppStatus,
@@ -68,6 +69,9 @@ export const api = {
   removeFromCollection: (projectId: string, collectionId: string, soundId: string) =>
     request<Library>(`/api/projects/${projectId}/collections/${collectionId}/items`, "DELETE", { soundId }),
   setDownloadRoot: (path: string) => request<Library>("/api/library/download-root", "PUT", { path }),
+  generated: () => request<Sound[]>("/api/generated"),
+  generate: (body: GenerateRequest) => request<Sound>("/api/generate", "POST", body),
+  deleteGenerated: (id: string) => request<Sound[]>(`/api/generated/${id}`, "DELETE"),
   pickFolder: () => request<{ path: string | null }>("/api/pick-folder", "POST"),
   addFolder: (folder: NewFolder) => request<Library>("/api/local/folders", "POST", folder),
   rescanFolder: (id: string) => request<Library>(`/api/local/folders/${id}/rescan`, "POST"),

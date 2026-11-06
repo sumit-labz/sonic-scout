@@ -31,9 +31,10 @@ function fileLine(sound: Sound): string {
 
 function LicenceBadge({ sound, open, onClick }: { sound: Sound; open: boolean; onClick: () => void }) {
   const declared = sound.licenceReview === "declared";
-  const tone = sound.licenceReview === "unreviewed" ? "warn" : declared ? "declared" : sound.licence.attributionRequired ? "credit" : "free";
+  const generated = sound.licenceReview === "generated";
+  const tone = sound.licenceReview === "unreviewed" || generated ? "warn" : declared ? "declared" : sound.licence.attributionRequired ? "credit" : "free";
   const credit = sound.licence.attributionRequired ? "credit required" : "no credit";
-  const text = `${declared ? "Your declaration" : "Commercial OK"} · ${credit}`;
+  const text = generated ? "Rights not verified" : `${declared ? "Your declaration" : "Commercial OK"} · ${credit}`;
   return (
     <button className={`licence ${tone}`} aria-expanded={open} onClick={onClick}>
       <strong>{sound.licence.label}</strong> {text}
@@ -52,6 +53,11 @@ function LicenceDetails({ sound }: { sound: Sound }) {
           The uploader set this licence and nobody has reviewed it. Check that they own the recording before you clear it.
         </p>
       )}
+      {sound.licenceReview === "generated" && (
+        <p className="caution">
+          Made with AI, so no licence applies. Sonic Scout couldn't confirm commercial rights for audio made through OpenRouter. Check this model's terms before a commercial release.
+        </p>
+      )}
       {sound.licenceReview === "declared" && (
         <p className="caution">
           This is the licence you declared for this folder. Local files carry no licence data, so Sonic Scout hasn't checked it.
@@ -68,12 +74,18 @@ function LicenceDetails({ sound }: { sound: Sound }) {
         </dd>
         <dt>Creator</dt>
         <dd>{webHost(sound.creatorUrl) ? <a href={sound.creatorUrl!} target="_blank" rel="noreferrer">{sound.creator}</a> : sound.creator}</dd>
-        <dt>{sound.licenceReview === "declared" ? "Declaration" : "Source says"}</dt>
+        {sound.licenceReview === "generated" && (
+          <>
+            <dt>Prompt</dt>
+            <dd>{sound.description}</dd>
+          </>
+        )}
+        <dt>{sound.licenceReview === "declared" ? "Declaration" : sound.licenceReview === "generated" ? "Model" : "Source says"}</dt>
         <dd><code>{licence.evidence.rawValue}</code> in {licence.evidence.field}</dd>
-        <dt>{sound.licenceReview === "declared" ? "Declared" : "Checked"}</dt>
+        <dt>{sound.licenceReview === "declared" ? "Declared" : sound.licenceReview === "generated" ? "Created" : "Checked"}</dt>
         <dd>
           {new Date(licence.evidence.checkedAt).toLocaleString()}.
-          {sound.licenceReview === "declared" ? " Your current declaration is read again when you save." : " Checked again when you download."}
+          {sound.licenceReview === "declared" ? " Your current declaration is read again when you save." : sound.licenceReview === "generated" ? "" : " Checked again when you download."}
         </dd>
         <dt>{sourceHost ? "Source page" : "Source"}</dt>
         <dd>{sourceHost ? <a href={sound.sourcePageUrl} target="_blank" rel="noreferrer">{sound.sourcePageUrl}</a> : sound.sourcePageUrl}</dd>

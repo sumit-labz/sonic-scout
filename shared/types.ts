@@ -1,3 +1,5 @@
+import type { GeneratorId } from "./generate";
+
 export type LicenceCode =
   | "cc0"
   | "pdm"
@@ -10,6 +12,7 @@ export type LicenceCode =
   | "sampling-plus"
   | "commercial"
   | "declared"
+  | "generated"
   | "personal"
   | "unknown";
 
@@ -38,7 +41,7 @@ export interface LicenceInfo {
   evidence: LicenceEvidence;
 }
 
-export type ProviderId = "freesound" | "openverse" | "wikimedia" | "archive" | "local";
+export type ProviderId = "freesound" | "openverse" | "wikimedia" | "archive" | "local" | "generated";
 
 export interface OriginalFile {
   /** The file as the creator uploaded it, not a lossy preview. */
@@ -70,7 +73,7 @@ export interface Sound {
   original: OriginalFile;
   licence: LicenceInfo;
   /** Who stands behind the licence: a reviewed library, only the uploader, or the user for their own folder. */
-  licenceReview: "community" | "unreviewed" | "declared";
+  licenceReview: "community" | "unreviewed" | "declared" | "generated";
   /** Ready-to-paste credit line. Null when the licence requires none. */
   attribution: string | null;
 }
@@ -192,12 +195,30 @@ export interface SoundFolder {
   truncated: boolean;
 }
 
+/** A take made with the user's OpenRouter key. */
+export interface Generation {
+  id: string;
+  generator: GeneratorId;
+  title: string;
+  /** Exactly what was sent, as the record of how the sound was made. */
+  prompt: string;
+  voice: string | null;
+  /** Words the model returned with the audio, such as lyrics. */
+  modelText: string;
+  format: string;
+  sizeBytes: number;
+  generationId: string | null;
+  estimatedCostUsd: number;
+  createdAt: string;
+}
+
 export interface Library {
   downloadRoot: string;
   favourites: Sound[];
   projects: Project[];
   downloads: DownloadRecord[];
   soundFolders: SoundFolder[];
+  generations: Generation[];
 }
 
 export interface ProviderStatus {
@@ -215,6 +236,7 @@ export interface AppStatus {
   providers: ProviderStatus[];
   freesoundLogin: { available: boolean; connected: boolean };
   shareAlikeAllowed: boolean;
+  generation: { available: boolean };
 }
 
 export interface DownloadResult {

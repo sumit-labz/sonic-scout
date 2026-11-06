@@ -212,3 +212,19 @@ input[type="range"] { width: 90px; accent-color: var(--accent); }
   .scrub { flex-basis: 100%; order: 3; }
   .time, input[type="range"] { display: none; }
 }
+
+.generate-intro { margin-bottom: 16px; }
+.generate-blurb { margin: 8px 0 14px; }
+.generate { display: flex; flex-direction: column; gap: 12px; }
+.field { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; color: var(--muted); font-size: 13px; }
+.field.narrow { flex: 0 0 96px; }
+.field input, .field select, .field textarea { width: 100%; padding: 8px 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; color: var(--text); font-size: 14px; }
+.field textarea { flex: none; resize: vertical; }
+.field textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.field-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.field-options { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; color: var(--muted); font-size: 13px; }
+.field-options label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+.chips.small button { padding: 3px 9px; font: 12px var(--mono); }
+.generate-submit { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+.generate-submit .hint { font-size: 12px; }
+.generate ~ .results { margin-top: 18px; }

@@ -24,6 +24,8 @@ const TERMS: Record<LicenceCode, Terms> = {
   commercial: { label: "Commercial licence", commercialUse: false, attributionRequired: false, shareAlike: false, noDerivatives: false },
   // Only folderLicence can clear this, and only for a declaration the user confirmed.
   declared: { label: "Declared licence", commercialUse: false, attributionRequired: false, shareAlike: false, noDerivatives: false },
+  // Not a licence at all. commercialUse stays false because nothing here proves it.
+  generated: { label: "AI-generated", commercialUse: false, attributionRequired: false, shareAlike: false, noDerivatives: false },
   personal: { label: "Personal use only", commercialUse: false, attributionRequired: false, shareAlike: false, noDerivatives: false },
   unknown: { label: "Unknown licence", commercialUse: false, attributionRequired: false, shareAlike: false, noDerivatives: false },
 };
@@ -183,6 +185,8 @@ export interface LicencePolicy {
 
 /** The commercial gate. Returns why a licence is refused, or null if it is cleared. */
 export function refusalReason(licence: LicenceInfo, policy: LicencePolicy): string | null {
+  // The user made this themselves, so it may be saved, but see isCleared.
+  if (licence.code === "generated") return null;
   if (licence.conflict) return licence.conflict;
   if (licence.code === "unknown") return "No verifiable licence on record.";
   if (!licence.commercialUse) return `${licence.label} does not allow commercial use.`;
@@ -194,7 +198,29 @@ export function refusalReason(licence: LicenceInfo, policy: LicencePolicy): stri
 }
 
 export function isCleared(licence: LicenceInfo, policy: LicencePolicy): boolean {
-  return refusalReason(licence, policy) === null;
+  return licence.code !== "generated" && refusalReason(licence, policy) === null;
+}
+
+/** Records how a generated sound was made. It claims no rights, because no terms clearly grant them. */
+export function generatedLicence(args: { model: string; generationId: string | null; createdAt: string; sourcePageUrl: string }): LicenceInfo {
+  const terms = TERMS.generated;
+  return {
+    code: "generated",
+    label: terms.label,
+    version: null,
+    url: null,
+    commercialUse: terms.commercialUse,
+    attributionRequired: terms.attributionRequired,
+    shareAlike: terms.shareAlike,
+    noDerivatives: terms.noDerivatives,
+    conflict: null,
+    evidence: {
+      rawValue: `${args.model}${args.generationId ? `, generation ${args.generationId}` : ""}`,
+      field: "OpenRouter request",
+      sourcePageUrl: args.sourcePageUrl,
+      checkedAt: args.createdAt,
+    },
+  };
 }
 
 export function attributionLine(args: {

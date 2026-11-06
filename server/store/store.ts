@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { mkdir, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { Collection, DownloadRecord, Library, Project, Sound, SoundFolder } from "../../shared/types";
+import type { Collection, DownloadRecord, Generation, Library, Project, Sound, SoundFolder } from "../../shared/types";
 
 export class StoreError extends Error {}
 
@@ -16,7 +16,7 @@ export class Store {
     defaultDownloadRoot: string,
   ) {
     this.file = join(dataDir, "library.json");
-    const fresh: Library = { downloadRoot: defaultDownloadRoot, favourites: [], projects: [], downloads: [], soundFolders: [] };
+    const fresh: Library = { downloadRoot: defaultDownloadRoot, favourites: [], projects: [], downloads: [], soundFolders: [], generations: [] };
     this.library = existsSync(this.file)
       ? { ...fresh, ...(JSON.parse(readFileSync(this.file, "utf8")) as Partial<Library>) }
       : fresh;
@@ -123,6 +123,16 @@ export class Store {
 
   async removeSoundFolder(folderId: string) {
     this.library.soundFolders = this.library.soundFolders.filter((folder) => folder.id !== folderId);
+    await this.save();
+  }
+
+  async addGeneration(generation: Generation) {
+    this.library.generations.unshift(generation);
+    await this.save();
+  }
+
+  async removeGeneration(id: string) {
+    this.library.generations = this.library.generations.filter((generation) => generation.id !== id);
     await this.save();
   }
 

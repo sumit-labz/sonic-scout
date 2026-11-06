@@ -5,7 +5,10 @@ import type { StatusCode } from "hono/utils/http-status";
 import { z } from "zod";
 import type { AppStatus, Interpretation, Sound } from "../shared/types";
 import { fileStream, MAX_FILE_BYTES, parseRange, type AudioCache, type CachedAudio } from "./cache/audioCache";
+import { ELEVEN_VOICES, MAX_IMAGE_BYTES, MAX_SPEECH_CHARS, type GenerateRequest } from "../shared/generate";
 import type { Config } from "./config";
+import { GenerateError } from "./generate/openrouter";
+import type { Studio } from "./generate/studio";
 import { DownloadError, downloadSound } from "./download/download";
 import { ProviderError, retryAfter } from "./http";
 import type { ClaudeInterpreter } from "./interpret/claude";
@@ -21,6 +24,7 @@ import { Store, StoreError } from "./store/store";
 export interface AppDeps {
   audioCache?: AudioCache;
   local?: LocalLibrary;
+  studio?: Studio;
   config: Config;
   store: Store;
   engine: SearchEngine;
@@ -64,6 +68,31 @@ const FolderBody = z.object({
   confirmed: z.boolean().default(false),
 });
 
+const VOICE_ID = /^[\w-]{1,64}$/;
+const GenerateBody = z.discriminatedUnion("generator", [
+  z.object({
+    generator: z.literal("lyria-clip"),
+    prompt: z.string().trim().min(3).max(1000),
+    mood: z.string().trim().max(120).optional(),
+    instruments: z.string().trim().max(200).optional(),
+    bpm: z.number().int().min(20).max(300).optional(),
+    instrumental: z.boolean(),
+    seed: z.number().int().min(0).max(2147483647).optional(),
+    image: z.string().regex(/^data:image\/(png|jpeg|webp);base64,/).max(Math.ceil(MAX_IMAGE_BYTES * 1.4)).optional(),
+  }),
+  z.object({
+    generator: z.literal("drama-3"),
+    text: z.string().trim().min(2).max(MAX_SPEECH_CHARS),
+    instructions: z.string().trim().max(500).optional(),
+    voice: z.union([z.literal(""), z.string().regex(VOICE_ID)]).optional().transform((voice) => voice || undefined),
+  }),
+  z.object({
+    generator: z.literal("eleven-v4"),
+    text: z.string().trim().min(2).max(MAX_SPEECH_CHARS),
+    voice: z.enum(ELEVEN_VOICES),
+  }),
+]);
+
 const AUDIO_CACHE_CONTROL = "private, max-age=604800";
 const CACHEABLE_DOWNLOAD_MS = 5 * 60 * 1000;
 const AUDIO_TYPE = /^(audio\/|application\/ogg)/i;
@@ -103,7 +132,7 @@ if ($f.ShowDialog($w) -eq 'OK') { [Console]::OutputEncoding = [Text.Encoding]::U
 }
 
 export function createApp(deps: AppDeps): Hono {
-  const { config, store, engine, providers, freesound, policy, audioCache, local } = deps;
+  const { config, store, engine, providers, freesound, policy, audioCache, local, studio } = deps;
   const app = new Hono();
 
   // This server can write files and open dialogs, so only this machine's own
@@ -117,6 +146,9 @@ export function createApp(deps: AppDeps): Hono {
 
   app.onError((error, c) => {
     if (error instanceof DownloadError) {
+      return c.json({ error: error.message, code: error.code }, error.status as never);
+    }
+    if (error instanceof GenerateError) {
       return c.json({ error: error.message, code: error.code }, error.status as never);
     }
     if (error instanceof StoreError) return c.json({ error: error.message, code: "not_found" }, 404);
@@ -133,7 +165,7 @@ export function createApp(deps: AppDeps): Hono {
     const status: AppStatus = {
       interpreter: deps.claude ? "claude" : "rules",
       model: deps.claude ? config.model : null,
-      providers: providers.map((provider) => ({
+      providers: providers.filter((provider) => provider.id !== "generated").map((provider) => ({
         id: provider.id,
         label: provider.label,
         enabled: provider.disabledReason() === null,
@@ -146,6 +178,7 @@ export function createApp(deps: AppDeps): Hono {
         connected: await freesound.isConnected(),
       },
       shareAlikeAllowed: policy.allowShareAlike,
+      generation: { available: studio?.available ?? false },
     };
     return c.json(status);
   });
@@ -255,6 +288,25 @@ export function createApp(deps: AppDeps): Hono {
     app.delete("/api/local/folders/:folder", async (c) => {
       await local.removeFolder(c.req.param("folder"));
       return c.json(store.snapshot());
+    });
+  }
+
+  if (studio) {
+    app.get("/api/generated", (c) => c.json(studio.list()));
+
+    app.post("/api/generate", async (c) => c.json(await studio.generate(GenerateBody.parse(await c.req.json()) as GenerateRequest)));
+
+    app.get("/api/generated/:id/audio", async (c) => {
+      const site = c.req.header("sec-fetch-site");
+      if (site && site !== "same-origin" && site !== "none") return c.json({ error: "Forbidden", code: "forbidden" }, 403);
+      const file = await studio.locate(c.req.param("id"));
+      if (!file) return c.json({ error: "That take is no longer available.", code: "not_found" }, 404);
+      return serveCachedAudio(file, c.req.header("range"), "no-store");
+    });
+
+    app.delete("/api/generated/:id", async (c) => {
+      await studio.remove(c.req.param("id"));
+      return c.json(studio.list());
     });
   }
 

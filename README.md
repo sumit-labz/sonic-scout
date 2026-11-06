@@ -20,6 +20,7 @@ Sonic Scout searches open sound libraries for film sound designers. It shows you
 | ⚖️ **A licence gate** | Every result is checked against its real licence. Anything not cleared for commercial use never reaches you, and you can see how many were blocked and why. |
 | 📂 **Your own packs too** | Point it at sound packs you've already downloaded, and they appear in the same results as the online libraries. |
 | 🔗 **The original page, one click away** | Every card links to the page where the sound was posted, so you can check the creator and the licence yourself. |
+| 🎛️ **Generate when nothing fits** | With your own OpenRouter key, sketch music with Lyria 3 Clip and directed voices with Drama 3 and Eleven v4. |
 | 🌊 **Real waveforms** | Drawn from the actual audio, never faked. |
 | 📁 **Project folders** | Sort sounds into film projects and collections, then save them all at once. |
 | 🧾 **A paper trail** | Each project gets a CSV inventory and a `CREDITS.txt` with ready-made credit lines. |
@@ -59,6 +60,7 @@ Copy `.env.example` to `.env`, fill in what you have, and restart.
 | `FREESOUND_API_KEY` | Direct Freesound search, with no daily Openverse cap. [Apply here](https://freesound.org/apiv2/apply). |
 | `FREESOUND_CLIENT_ID` | A "Connect Freesound" link in Setup. **Required for original WAVs from Freesound.** Set the app's callback URL on Freesound to `http://localhost:5178/api/freesound/oauth/callback`, and run `npm run build` once so the callback has a page to land on. |
 | `ANTHROPIC_API_KEY` | Claude reads your description instead of the built-in rules. It handles unusual subjects and emotional language far better. |
+| `OPENROUTER_API_KEY` | Turns on the **Generate** screen. [Create a key here](https://openrouter.ai/keys). Generating spends your OpenRouter credit. |
 
 ## 🔍 How a search works
 
@@ -159,6 +161,31 @@ Some of the best free collections have no API, such as the [Sonniss GDC bundles]
 - 🔄 Press **Rescan** after adding or changing files. Each file can belong to only one folder, so overlapping folders are refused.
 - ⛓️ Links and shortcuts are skipped, and up to 200,000 sounds are indexed per folder.
 - 🎧 WAV, FLAC, MP3, OGG and M4A play in the app. AIFF files can be found and saved but won't play in Chrome or Edge, so audition those in Ableton.
+
+## 🎛️ Generate
+
+When the libraries don't have it, sketch it. Add `OPENROUTER_API_KEY` to `.env`, restart, and open **Generate**.
+
+![The Generate screen with Eleven v4 selected](docs/generate.png)
+
+*Layout only: this screenshot uses placeholder audio, so the waveforms match.*
+
+> 🧪 **Early feature.** This has been tested against a stand-in built from OpenRouter's docs, not live models yet. Lyria's audio response isn't documented, so please open an issue if a model misbehaves.
+
+| Model | Good for | Controls | Listed price |
+| --- | --- | --- | --- |
+| 🎵 **Lyria 3 Clip** (Google) | 30-second music sketches | Mood, instruments, BPM, instrumental only, seed, and a picture to set the mood | $0.04 a clip |
+| 🎭 **Drama 3** (Fish Audio) | Directed performances | `[direction]` buttons in the script, direction for the whole take, Fish voice id | $2 per million bytes |
+| 🗣️ **Eleven v4** (ElevenLabs) | Expressive voices in many languages | Audio tag buttons, 21 voices | $80 per million characters |
+
+- 💸 The button shows an estimate before you spend anything. A failed request is never retried automatically, and a double click can't pay twice.
+- 🧾 Takes are stored in `data/generated`, with the exact prompt and generation id. Star them, add them to projects and save them like any other sound.
+- 🔇 Generated sounds never appear in search, because search only shows cleared sounds.
+- 🎤 Don't imitate a real person's voice. Sonic Scout has no voice cloning, and the providers forbid doing this without consent.
+
+> ⚠️ **Rights are not verified.** Generated audio is labelled **AI-generated, rights not verified**, in the app and in the inventory, and it is never marked as cleared. OpenRouter's terms hand output rights to each model's own terms. ElevenLabs and Fish Audio tie commercial use to paid plans, and it isn't clear how that applies to routed access. Fish Audio's terms don't state who owns output. Check each model's terms, or ask a lawyer, before a commercial release.
+
+> 🔒 **Privacy.** Your prompts, and any picture you add, go to OpenRouter and the model's maker. Google, Fish Audio and ElevenLabs have their own rules on using that content, and some allow training on it. Don't paste anything confidential.
 
 ## ⚡ Caching
 

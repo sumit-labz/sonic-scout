@@ -391,6 +391,10 @@ export function SettingsView({ status }: { status: AppStatus | null }) {
         </p>
       </section>
       <section className="settings">
+        <h2>Sound generation</h2>
+        <p className="hint">{status?.generation.available ? "On, using your OpenRouter key." : "Add OPENROUTER_API_KEY to .env to generate music and voices."}</p>
+      </section>
+      <section className="settings">
         <h2>Description reader</h2>
         <p className="hint">{status?.interpreter === "claude" ? `Claude (${status.model})` : "Built-in rules. Add ANTHROPIC_API_KEY to .env for Claude."}</p>
       </section>

@@ -6,6 +6,7 @@ export interface Config {
   dataDir: string;
   defaultDownloadRoot: string;
   anthropicKey: string | null;
+  openrouterKey: string | null;
   model: string;
   freesoundKey: string | null;
   freesoundClientId: string | null;
@@ -25,6 +26,7 @@ export function loadConfig(): Config {
     dataDir: value("SONIC_SCOUT_DATA") ?? join(process.cwd(), "data"),
     defaultDownloadRoot: join(homedir(), "Music", "Sonic Scout"),
     anthropicKey: value("ANTHROPIC_API_KEY"),
+    openrouterKey: value("OPENROUTER_API_KEY"),
     model: value("SONIC_SCOUT_MODEL") ?? "claude-opus-5-5",
     freesoundKey: value("FREESOUND_API_KEY"),
     freesoundClientId: value("FREESOUND_CLIENT_ID"),

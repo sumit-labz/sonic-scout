@@ -57,7 +57,7 @@ export class Studio {
       live: true,
       originals: () => "Saved as the model returned them",
       disabledReason: () => (this.apiKey ? null : "Add OPENROUTER_API_KEY to .env."),
-      // Rights aren't verified, so these never appear in results labelled as cleared.
+      // Search only shows sounds with a licence, and these have none.
       search: async () => [],
       getById: async (id) => {
         const generation = this.find(id);
@@ -140,7 +140,7 @@ export class Studio {
   }
 
   sound(generation: Generation): Sound {
-    const { model, name, maker } = GENERATORS[generation.generator];
+    const { model, name, maker, rights } = GENERATORS[generation.generator];
     const sourcePageUrl = `https://openrouter.ai/${model}`;
     const slug = generation.title.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 40);
     return {
@@ -167,7 +167,8 @@ export class Studio {
         sampleRate: null,
         bitDepth: null,
       },
-      licence: generatedLicence({ model, generationId: generation.generationId, createdAt: generation.createdAt, sourcePageUrl }),
+      licence: generatedLicence({ model, generationId: generation.generationId, createdAt: generation.createdAt, sourcePageUrl, termsUrl: rights.termsUrl }),
+      rights,
       licenceReview: "generated",
       attribution: null,
     };

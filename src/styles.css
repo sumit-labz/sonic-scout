@@ -228,3 +228,9 @@ input[type="range"] { width: 90px; accent-color: var(--accent); }
 .generate-submit { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
 .generate-submit .hint { font-size: 12px; }
 .generate ~ .results { margin-top: 18px; }
+.rights { margin-top: 18px; padding: 12px 14px; background: var(--panel); border-left: 3px solid var(--credit); border-radius: 6px; font-size: 13px; }
+.rights.temp { border-left-color: var(--warn); }
+.rights h2 { margin-bottom: 4px; font-size: 14px; font-weight: 600; color: var(--credit); }
+.rights.temp h2 { color: var(--warn); }
+.rights ul { margin: 6px 0; padding-left: 18px; color: var(--muted); }
+.generate ~ .rights ~ .results { margin-top: 18px; }

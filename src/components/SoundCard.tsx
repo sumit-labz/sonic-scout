@@ -32,9 +32,9 @@ function fileLine(sound: Sound): string {
 function LicenceBadge({ sound, open, onClick }: { sound: Sound; open: boolean; onClick: () => void }) {
   const declared = sound.licenceReview === "declared";
   const generated = sound.licenceReview === "generated";
-  const tone = sound.licenceReview === "unreviewed" || generated ? "warn" : declared ? "declared" : sound.licence.attributionRequired ? "credit" : "free";
+  const tone = sound.licenceReview === "unreviewed" || sound.rights?.level === "temp" ? "warn" : generated ? "credit" : declared ? "declared" : sound.licence.attributionRequired ? "credit" : "free";
   const credit = sound.licence.attributionRequired ? "credit required" : "no credit";
-  const text = generated ? "Rights not verified" : `${declared ? "Your declaration" : "Commercial OK"} · ${credit}`;
+  const text = generated ? sound.rights?.verdict ?? "See the model's terms" : `${declared ? "Your declaration" : "Commercial OK"} · ${credit}`;
   return (
     <button className={`licence ${tone}`} aria-expanded={open} onClick={onClick}>
       <strong>{sound.licence.label}</strong> {text}
@@ -55,7 +55,7 @@ function LicenceDetails({ sound }: { sound: Sound }) {
       )}
       {sound.licenceReview === "generated" && (
         <p className="caution">
-          Made with AI, so no licence applies. Sonic Scout couldn't confirm commercial rights for audio made through OpenRouter. Check this model's terms before a commercial release.
+          {sound.rights?.summary}
         </p>
       )}
       {sound.licenceReview === "declared" && (

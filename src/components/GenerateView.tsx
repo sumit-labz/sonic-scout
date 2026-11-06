@@ -4,6 +4,7 @@ import {
   GENERATORS,
   MAX_IMAGE_BYTES,
   MAX_SPEECH_CHARS,
+  RIGHTS_CHECKED,
   estimateCost,
   formatCost,
   lyriaPrompt,
@@ -237,10 +238,12 @@ export function GenerateView({ status }: { status: AppStatus | null }) {
 
       {error && <p className="error" role="alert">{error}</p>}
 
-      <p className="note">
-        Rights not verified. The terms we checked don't clearly grant commercial rights for audio made through OpenRouter, so generated
-        sounds aren't marked as cleared. Check each model's terms before a commercial release.
-      </p>
+      <section className={`rights${info.rights.level === "temp" ? " temp" : ""}`} aria-label={`Rights for ${info.name}`}>
+        <h2>{info.rights.verdict}</h2>
+        <p>{info.rights.summary}</p>
+        <ul>{info.rights.rules.map((rule) => <li key={rule}>{rule}</li>)}</ul>
+        <p className="hint"><a href={info.rights.termsUrl} target="_blank" rel="noreferrer">{info.maker} terms ↗</a> · Read {RIGHTS_CHECKED}. Not legal advice.</p>
+      </section>
 
       {sounds.length > 0 && (
         <div className="results">

@@ -201,14 +201,14 @@ export function isCleared(licence: LicenceInfo, policy: LicencePolicy): boolean 
   return licence.code !== "generated" && refusalReason(licence, policy) === null;
 }
 
-/** Records how a generated sound was made. It claims no rights, because no terms clearly grant them. */
-export function generatedLicence(args: { model: string; generationId: string | null; createdAt: string; sourcePageUrl: string }): LicenceInfo {
+/** Records how a generated sound was made. No licence applies, so what it may be used for comes from the model's terms. */
+export function generatedLicence(args: { model: string; generationId: string | null; createdAt: string; sourcePageUrl: string; termsUrl: string }): LicenceInfo {
   const terms = TERMS.generated;
   return {
     code: "generated",
     label: terms.label,
     version: null,
-    url: null,
+    url: args.termsUrl,
     commercialUse: terms.commercialUse,
     attributionRequired: terms.attributionRequired,
     shareAlike: terms.shareAlike,

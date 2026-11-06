@@ -200,6 +200,15 @@ describe("studio", () => {
     expect(JSON.parse(text).providers).toEqual([]);
   });
 
+  it("gives every model its own verdict from its own terms", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => speech()));
+    const fish = await studio.generate({ generator: "drama-3", text: "Hello" });
+    expect(fish.rights).toMatchObject({ verdict: "Use as temp audio only", level: "temp" });
+    expect(fish.licence.url).toBe("https://fish.audio/terms/");
+    const eleven = await studio.generate({ generator: "eleven-v4", text: "Hello", voice: "george" });
+    expect(eleven.rights?.level).toBe("caution");
+  });
+
   it("never calls a generated sound cleared, but lets it be saved", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => speech()));
     const sound = await studio.generate({ generator: "eleven-v4", text: "Hello", voice: "george" });
@@ -220,8 +229,8 @@ describe("studio", () => {
     });
     expect(readFileSync(record.path).equals(MP3)).toBe(true);
     const inventory = readFileSync(join(root, "out", "Unsorted", "sonic-scout-inventory.csv"), "utf8");
-    expect(inventory).toContain("AI-generated, rights not verified");
-    expect(inventory).toContain("not verified");
+    expect(inventory).toContain("Commercial use needs a paid ElevenLabs plan");
+    expect(inventory).toContain("https://elevenlabs.io/terms-of-use");
     expect(inventory).toContain("prompt: Hello there");
     expect(inventory).toContain("gen-9");
   });

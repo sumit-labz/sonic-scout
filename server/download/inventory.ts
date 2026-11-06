@@ -13,7 +13,7 @@ const REVIEW_LABELS: Record<Sound["licenceReview"], string> = {
   community: "community reviewed library",
   unreviewed: "unreviewed uploader claim",
   declared: "declared by you for this folder",
-  generated: "AI-generated, rights not verified",
+  generated: "AI-generated, see the model's terms",
 };
 
 export function csvCell(value: string | number | boolean | null | undefined): string {
@@ -48,7 +48,7 @@ export function inventoryRow(args: {
     duration_sec: sound.durationSec === null ? null : Number(sound.durationSec.toFixed(2)),
     licence: sound.licence.label,
     licence_url: sound.licence.url,
-    commercial_use: sound.licenceReview === "generated" ? "not verified" : sound.licence.commercialUse,
+    commercial_use: sound.rights?.verdict ?? sound.licence.commercialUse,
     attribution_required: sound.licence.attributionRequired,
     attribution_text: sound.attribution,
     licence_review: REVIEW_LABELS[sound.licenceReview],

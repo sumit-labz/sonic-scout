@@ -183,7 +183,17 @@ When the libraries don't have it, sketch it. Add `OPENROUTER_API_KEY` to `.env`,
 - 🔇 Generated sounds never appear in search, because search only shows cleared sounds.
 - 🎤 Don't imitate a real person's voice. Sonic Scout has no voice cloning, and the providers forbid doing this without consent.
 
-> ⚠️ **Rights are not verified.** Generated audio is labelled **AI-generated, rights not verified**, in the app and in the inventory, and it is never marked as cleared. OpenRouter's terms hand output rights to each model's own terms. ElevenLabs and Fish Audio tie commercial use to paid plans, and it isn't clear how that applies to routed access. Fish Audio's terms don't state who owns output. Check each model's terms, or ask a lawyer, before a commercial release.
+### ⚖️ What you can do with a take
+
+Read from each model's own terms on 6 November 2026. This isn't legal advice, and no licence applies to AI output, so takes never count as cleared.
+
+| Model | Verdict | Why | Rules |
+| --- | --- | --- | --- |
+| 🎵 Lyria 3 Clip | 🟡 **Commercial use not forbidden** | [Google](https://aistudio.google.com/docs/terms) sets no commercial ban and "won't claim ownership". It grants no licence in words, and may generate similar music for others. | SynthID watermark on every clip. Artist voices and copyrighted lyrics are blocked. Don't deceive people about its origin. Some API output may need attribution. |
+| 🗣️ Eleven v4 | 🟡 **Needs a paid ElevenLabs plan** | [ElevenLabs](https://elevenlabs.io/terms-of-use) says "you retain all rights" in your output and has no film ban for this model. Commercial use requires a paid subscription, and it doesn't say OpenRouter access counts. | Use as temp, then remake finals on your own paid plan. ElevenLabs keeps a licence to your output, which may not be unique. No imitating living people without consent. |
+| 🎭 Drama 3 | 🟠 **Temp audio only** | [Fish Audio](https://fish.audio/terms/) licenses commercial use for paid services, but doesn't say pay-as-you-go API use counts, and never says who owns output. | Keep it as a temp track unless Fish Audio confirms in writing. Fish Audio may train AI on your content. Don't present it as entirely human-made. |
+
+[OpenRouter's terms](https://openrouter.ai/terms) leave output rights to each model's terms, so these verdicts come from the model makers. Each verdict also appears on the take and in the inventory's `commercial_use` column.
 
 > 🔒 **Privacy.** Your prompts, and any picture you add, go to OpenRouter and the model's maker. Google, Fish Audio and ElevenLabs have their own rules on using that content, and some allow training on it. Don't paste anything confidential.
 

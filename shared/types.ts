@@ -1,4 +1,4 @@
-import type { GeneratorId } from "./generate";
+import type { GeneratedRights, GeneratorId } from "./generate";
 
 export type LicenceCode =
   | "cc0"
@@ -74,6 +74,8 @@ export interface Sound {
   licence: LicenceInfo;
   /** Who stands behind the licence: a reviewed library, only the uploader, or the user for their own folder. */
   licenceReview: "community" | "unreviewed" | "declared" | "generated";
+  /** What the model's own terms allow. Only generated sounds have this. */
+  rights?: GeneratedRights;
   /** Ready-to-paste credit line. Null when the licence requires none. */
   attribution: string | null;
 }

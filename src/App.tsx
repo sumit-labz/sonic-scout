@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AppStatus, Library, SearchFilters, SearchResponse } from "../shared/types";
 import { api } from "./api";
 import { GenerateView } from "./components/GenerateView";
+import { InstrumentsView } from "./components/InstrumentsView";
 import { SearchView } from "./components/SearchView";
 import { Transport } from "./components/Transport";
 import { BrowseView, FavouritesView, ProjectsView, SettingsView } from "./components/Views";
@@ -12,6 +13,7 @@ const NAV: Array<[View, string]> = [
   ["search", "Scout"],
   ["browse", "Browse"],
   ["generate", "Generate"],
+  ["instruments", "Instruments"],
   ["favourites", "Favourites"],
   ["projects", "Projects"],
   ["settings", "Setup"],
@@ -171,6 +173,7 @@ export function App() {
           )}
           {view === "browse" && <BrowseView />}
           {view === "generate" && <GenerateView status={status} />}
+          {view === "instruments" && <InstrumentsView />}
           {view === "favourites" && <FavouritesView />}
           {view === "projects" && <ProjectsView />}
           {view === "settings" && <SettingsView status={status} />}

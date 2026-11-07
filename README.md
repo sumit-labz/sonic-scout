@@ -197,6 +197,22 @@ Read from each model's own terms on 6 November 2026. This isn't legal advice, an
 
 > 🔒 **Privacy.** Your prompts, and any picture you add, go to OpenRouter and the model's maker. Google, Fish Audio and ElevenLabs have their own rules on using that content, and some allow training on it. Don't paste anything confidential.
 
+## 🎹 Free instruments for scoring
+
+The **Instruments** tab is a catalogue of 190 free instruments for Ableton Live. Start from a cue type, such as horror or period romance, to get a suggested palette. Or start from one of 13 instrument families, and filter by the player it needs.
+
+Each card shows what it runs in, its system, whether it needs sign-up, and how far its commercial use was checked:
+
+| Badge | Meaning |
+| --- | --- |
+| 🟢 Open licence | Open-source or public-domain licence. |
+| 🟢 Commercial use stated | The maker's own terms allow commercial music. |
+| 🟡 Reported cleared | [Bedroom Producers Blog](https://bedroomproducersblog.com/free-vst-plugins/kontakt-libraries/) says it checked with the developer. |
+| 🟡 Credit required | Usable, but the licence asks for a credit. |
+| 🟠 Read the licence | Not confirmed yet. Read it before paid work. |
+
+> ⚠️ Researched in November 2026. It's a hand-checked list, not every free plugin in existence, and prices can change. The plugin files aren't included: each card links to the maker. Pictures load from the makers' websites when you open the tab.
+
 ## ⚡ Caching
 
 These libraries are free services, so Sonic Scout tries not to ask them twice.

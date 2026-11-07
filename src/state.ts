@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
 import type { Library } from "../shared/types";
 
-export type View = "search" | "browse" | "generate" | "favourites" | "projects" | "settings";
+export type View = "search" | "browse" | "generate" | "instruments" | "favourites" | "projects" | "settings";
 
 export interface AppState {
   library: Library;

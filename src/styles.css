@@ -234,3 +234,51 @@ input[type="range"] { width: 90px; accent-color: var(--accent); }
 .rights.temp h2 { color: var(--warn); }
 .rights ul { margin: 6px 0; padding-left: 18px; color: var(--muted); }
 .generate ~ .rights ~ .results { margin-top: 18px; }
+
+/* Instruments */
+.instruments .lede { color: var(--muted); margin-top: 4px; }
+.section-title { font-size: 13px; font-weight: 600; color: var(--muted); margin: 26px 0 10px; }
+.kits { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+.kits button { display: grid; gap: 2px; padding: 12px 14px; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.kits button:hover { background: var(--raised); }
+.kits button.on, .families button.on { border-color: var(--accent); }
+.kits span { color: var(--muted); font-size: 12.5px; }
+.families { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.families button { position: relative; overflow: hidden; display: block; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.families button:hover { background: var(--raised); }
+.families .art { height: 78px; }
+.families span { display: block; padding: 8px 10px; font-size: 13px; }
+.families small { position: absolute; top: 6px; right: 8px; color: #fff; font: 12px var(--mono); opacity: .85; }
+.art { display: grid; place-items: center; width: 100%; height: 100%; }
+.art svg { width: 46px; height: 46px; fill: none; stroke: rgba(255, 255, 255, .86); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.instrument-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 26px 0 6px; padding: 10px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.instrument-filters > input { flex: 1 1 220px; min-width: 0; padding: 6px 10px; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+.instrument-filters select { padding: 6px 8px; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+.instrument-filters label { display: flex; gap: 6px; align-items: center; color: var(--muted); font-size: 13px; }
+.instrument-filters .count { margin-left: auto; color: var(--faint); font: 12px var(--mono); }
+.group-head { display: flex; justify-content: space-between; align-items: baseline; margin: 28px 0 10px; }
+.group-head h2 { font-size: 18px; font-weight: 500; }
+.group-head span { color: var(--faint); font: 12px var(--mono); }
+.kit-note { color: var(--muted); margin: -4px 0 10px; }
+.instrument-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+.instrument { display: flex; flex-direction: column; overflow: hidden; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.instrument-picture { position: relative; overflow: hidden; display: block; aspect-ratio: 16 / 7; background: var(--raised); }
+.instrument-picture img, .instrument-picture .art { position: absolute; inset: 0; }
+.instrument-picture img { width: 100%; height: 100%; object-fit: cover; }
+.instrument-body { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; font-size: 13px; }
+.instrument h3 { font-size: 15px; font-weight: 600; line-height: 1.3; }
+.instrument .maker { color: var(--faint); font-size: 12px; margin-bottom: 4px; }
+.instrument .role { color: var(--accent); font: 11px var(--mono); text-transform: uppercase; letter-spacing: .05em; }
+.pick { margin-left: 8px; padding: 1px 6px; vertical-align: 1px; color: var(--accent); border: 1px solid currentColor; border-radius: 4px; font: 500 10.5px var(--sans); white-space: nowrap; }
+.caution { color: var(--warn); font-size: 12.5px; }
+.instrument dl { display: grid; grid-template-columns: auto 1fr; gap: 1px 10px; margin: 8px 0; color: var(--muted); font-size: 12px; }
+.instrument dt { color: var(--faint); }
+.instrument dd { margin: 0; }
+.instrument-foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+.instrument-foot a { color: var(--text); font-weight: 600; white-space: nowrap; }
+.right { font-size: 12px; color: var(--warn); }
+.right.open, .right.stated { color: var(--free); }
+.right.reported, .right.credit { color: var(--credit); }
+.instrument-notes { margin-top: 32px; padding: 12px 14px; color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.instrument-notes summary { cursor: pointer; color: var(--text); }
+.instrument-notes ul { margin: 10px 0 0; padding-left: 18px; display: grid; gap: 6px; }
